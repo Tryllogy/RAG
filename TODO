@@ -1,0 +1,33 @@
+CHUNKER
+INDEXATION
+RETRIEVE
+ANSWER
+EVALUATION
+
+Prendre "tous" les fichiers de vllm pour "repondre" aux questions (sauf certain formats)
+    - Ingnorer le "setup.py" -> inutile et fausse les reponses
+
+
+Utiliser les librairies externes pour le chunking, indexation, retrieve...
+Utiliser "BM25" pour retrieve (meilleur que TF-IDF)
+
+Utilisation potentiel : Ollama (evite de retelecharger les modeles a chaque fois)
+
+
+
+Fire : 
+    - index: Index the repository
+    - search: Search for a single query
+    - search_dataset: Process multiple questions and output search results
+    - answer: Answer a single question with context ("STR")
+    - answer_dataset: Generate answers from search results
+    - evaluate: Evaluate search results against ground truth (PATH)
+    
+    --max_chunk_size INT
+    --k INT
+    --dataset_path PATH/TO/DATA_SET.json
+    --save_directory PATH/TO/RESULT_DIR
+    --student_search_results_path PATH/TO/RESULT.json
+
+
+Chunking :
