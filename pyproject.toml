@@ -11,6 +11,12 @@ requires-python = ">=3.9"
 dependencies = [
     "pydantic>=2.0",
     "fire",
+    "langchain_ollama",
+    "langchain-text-splitters",
+    "langchain_chroma",
+    "langchain_community",
+    "bm25",
+    "rank_bm25"
 ]
 
 [project.optional-dependencies]

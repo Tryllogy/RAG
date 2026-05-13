@@ -1,4 +1,6 @@
 import fire
+from langchain_ollama import OllamaLLM
+from src import indexer
 
 
 def test(x="salut"):
@@ -6,7 +8,8 @@ def test(x="salut"):
 
 
 def main() -> None:
-    fire.Fire(test)
+    llm = OllamaLLM(model="qwen3")
+    fire.Fire(indexer.Index(llm))
 
 
 if __name__ == "__main__":
