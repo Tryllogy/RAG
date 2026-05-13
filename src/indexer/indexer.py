@@ -1,6 +1,8 @@
 from typing import Any
 from ..chunker import Chunk
 from langchain_community.retrievers import BM25Retriever
+import pickle
+import os
 
 
 class Index:
@@ -12,9 +14,9 @@ class Index:
             self,
             max_chunk_size: int = 3000,
             k=5
-    ) -> BM25Retriever:
+    ) -> None:
         self.chunker = Chunk(max_chunk_size=max_chunk_size)
-        self.chunker.chunk_files("datasets_public/vllm-0.10.1")
+        self.chunker.chunk_files("data/raw/vllm-0.10.1")
         self.chunker.to_json()
 
         self.retriver = BM25Retriever.from_texts(
@@ -22,4 +24,6 @@ class Index:
             k=k
         )
 
-        return self.retriver
+        os.makedirs("data/processed/bm25_index", exist_ok=True)
+        with open("data/processed/bm25_index/bm25.pkl", "wb") as f:
+            pickle.dump(self.retriver, f)

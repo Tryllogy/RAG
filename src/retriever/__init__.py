@@ -1,4 +1,4 @@
-from retriever import Retrieve
+from .retriever import Retrieve
 
 __all__ = [
     "Retrieve"

@@ -16,7 +16,7 @@ dependencies = [
     "langchain_chroma",
     "langchain_community",
     "bm25",
-    "rank_bm25"
+    "rank_bm25",
 ]
 
 [project.optional-dependencies]
