@@ -1,31 +1,45 @@
 from langchain_ollama import OllamaLLM
 from ..index import Index
+from ..answer import Answer
 import os
 
 
 class FireLaunch:
-    def __init__(self, max_chunk_size: int = 3000):
+    def __init__(self):
         self.llm: OllamaLLM = OllamaLLM(model="qwen3")
-        self.max_chunk_size: int = max_chunk_size
 
-    def index(self):
+    def index(
+            self,
+            max_chunk_size: int = 3000,
+    ) -> "FireLaunch":
         if os.path.exists("data/processed/chunks") and \
             os.path.exists("data/processed/bm25_index"):
-            print("Files already chunked")
+            print("Files already indexed")
             return self
         index_instance = Index(llm=self.llm,
-                               max_chunk_size=self.max_chunk_size)
+                               max_chunk_size=max_chunk_size)
         index_instance.index()
         return self
 
-    def answer(self):
-        print("answer")
+    def answer(
+            self,
+            question: str = "",
+            k: int = 5
+    ) -> "FireLaunch":
+        answer_instance = Answer(question=question, k=k)
+        result = answer_instance.answer()
         return self
-
-    def search_dataset(self):
+    
+    def search(self) -> "FireLaunch":
         pass
 
-    def answer_dataset(self):
+    def search_dataset(self) -> "FireLaunch":
+        pass
+
+    def answer_dataset(self) -> "FireLaunch":
+        pass
+
+    def evaluate(self) -> "FireLaunch":
         pass
 
     def __str__(self):

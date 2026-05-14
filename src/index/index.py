@@ -7,7 +7,7 @@ import os
 
 
 class Index:
-    def __init__(self, llm: Any, max_chunk_size: int = 3000, k: int = 5):
+    def __init__(self, llm: Any, max_chunk_size: int = 3000, k: int = 15):
         self.llm: Any = llm
         self.max_chunk_size: int = max_chunk_size
         self.k: int = k

@@ -1,4 +1,3 @@
-from langchain_community.retrievers import BM25Retriever
 import pickle
 
 
@@ -18,5 +17,10 @@ class Retrieve:
             query: str,
             k: int = 5
     ):
-        results = self.retriever.invoke(query, k=k)
+        if self.retriever.k < k:
+            print("k is larger than the default value, "
+                  f"setting k to {self.retriever.k}")
+        else:
+            self.retriever.k = k
+        results = self.retriever.invoke(query)
         return results
