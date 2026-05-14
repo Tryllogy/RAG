@@ -1,13 +1,6 @@
 import fire
-from langchain_ollama import OllamaLLM
-from src import indexer, retriever
-
-
-def main() -> None:
-    llm = OllamaLLM(model="qwen3")
-    # fire.Fire(indexer.Index(llm))
-    fire.Fire(retriever.Retrieve())
+from src import fire_launch
 
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(fire_launch.FireLaunch)

@@ -12,7 +12,7 @@ Utiliser les librairies externes pour le chunking, indexation, retrieve...
 Utiliser "BM25" pour retrieve (meilleur que TF-IDF)
 
 Utilisation potentiel : Ollama (evite de retelecharger les modeles a chaque fois)
-
+PROGRESS BAR
 
 
 Fire : 

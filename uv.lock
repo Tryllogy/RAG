@@ -3982,6 +3982,7 @@ dependencies = [
     { name = "langchain-text-splitters", version = "1.1.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "pydantic" },
     { name = "rank-bm25" },
+    { name = "tqdm" },
 ]
 
 [package.optional-dependencies]
@@ -4001,6 +4002,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "rank-bm25" },
+    { name = "tqdm" },
 ]
 provides-extras = ["dev"]
 

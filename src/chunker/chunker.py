@@ -1,11 +1,12 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os
 import json
+from tqdm import tqdm
 
 
 class Chunk:
 
-    IGNORED_FILES = [
+    ignored_files: list = [
         "setup.py",
         ".toml",
         ".yaml",
@@ -39,6 +40,7 @@ class Chunk:
             )
         self.chunk_code: list = []
         self.chunk_text: list = []
+        self.files: list = []
 
     def chunk(
             self,
@@ -50,35 +52,47 @@ class Chunk:
             return self.splitter.from_language(file_str, language="python")
 
     def chunk_files(
+            self
+    ) -> None:
+        for f in tqdm(self.files, desc="Chunking files"):
+            with open(f, "r") as file:
+                text = file.read()
+            chunks = self.chunk(text)
+            for chunk in chunks:
+                if f.endswith(".py"):
+                    self.chunk_code.append(chunk)
+                else:
+                    self.chunk_text.append(chunk)
+
+    def to_json(self) -> dict:
+        chunk_text: list = []
+        chunk_code: list = []        
+        for chunk in tqdm(self.chunk_text,
+                          desc="Converting text chunks to JSON"):
+            chunk_text.append({"chunk": chunk})
+        for chunk in tqdm(self.chunk_code,
+                          desc="Converting code chunks to JSON"):
+            chunk_code.append({"chunk": chunk})
+
+        with open(os.path.join(self.new_dir, "chunk_text.json"), "w") as f:
+            with tqdm(total=1, desc="Saving text chunks") as pbar:
+                json.dump(chunk_text, f, indent=4)
+                pbar.update(1)
+        with open(os.path.join(self.new_dir, "chunk_code.json"), "w") as f:
+            with tqdm(total=1, desc="Saving code chunks") as pbar:
+                json.dump(chunk_code, f, indent=4)
+                pbar.update(1)
+
+    def get_files(
             self,
             directory: str
     ) -> None:
         all_dirs = os.listdir(directory)
         for dir in all_dirs:
-            if (dir.endswith(tuple(self.IGNORED_FILES)) or
-                    dir in self.IGNORED_FILES):
+            if (dir.endswith(tuple(Chunk.ignored_files)) or
+                    dir in Chunk.ignored_files):
                 continue
             if os.path.isdir(os.path.join(directory, dir)):
-                self.chunk_files(os.path.join(directory, dir))
+                self.get_files(os.path.join(directory, dir))
             else:
-                with open(os.path.join(directory, dir), "r") as f:
-                    text = f.read()
-                chunks = self.chunk(text)
-                for chunk in chunks:
-                    if dir.endswith(".py"):
-                        self.chunk_code.append(chunk)
-                    else:
-                        self.chunk_text.append(chunk)
-
-    def to_json(self) -> dict:
-        chunk_text: list = []
-        chunk_code: list = []
-        for chunk in self.chunk_text:
-            chunk_text.append({"chunk": chunk})
-        for chunk in self.chunk_code:
-            chunk_code.append({"chunk": chunk})
-
-        with open(os.path.join(self.new_dir, "chunk_text.json"), "w") as f:
-            json.dump(chunk_text, f, indent=4)
-        with open(os.path.join(self.new_dir, "chunk_code.json"), "w") as f:
-            json.dump(chunk_code, f, indent=4)
+                self.files.append(os.path.join(directory, dir))

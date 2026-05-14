@@ -1,4 +1,4 @@
-from .indexer import Index
+from .index import Index
 
 __all__ = [
     "Index"

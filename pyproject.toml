@@ -17,6 +17,7 @@ dependencies = [
     "langchain_community",
     "bm25",
     "rank_bm25",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
