@@ -1,6 +1,6 @@
 UV := uv
 SRC := student
-FIRE :=
+QUESTION :=
 
 install:
 	$(UV) sync
@@ -11,3 +11,6 @@ install:
 
 run: install
 	$(UV) run python -m $(SRC)
+
+question: install
+	clear && uv run python -m student answer "$(QUESTION)" --k 10

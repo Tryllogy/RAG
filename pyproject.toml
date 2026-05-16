@@ -17,6 +17,7 @@ dependencies = [
     "bm25",
     "rank_bm25",
     "tqdm",
+    "scikit-learn"
 ]
 
 [project.optional-dependencies]

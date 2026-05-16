@@ -40,6 +40,8 @@ class Chunk:
             )
         self.chunk_code: list = []
         self.chunk_text: list = []
+        self.chunk_code_with_source: list = []
+        self.chunk_text_with_source: list = []
         self.files: list = []
 
     def chunk(
@@ -61,26 +63,23 @@ class Chunk:
             for chunk in chunks:
                 if f.endswith(".py"):
                     self.chunk_code.append(chunk)
+                    self.chunk_code_with_source.append(
+                        {"chunk": chunk, "source": f})
                 else:
                     self.chunk_text.append(chunk)
+                    self.chunk_text_with_source.append(
+                        {"chunk": chunk, "source": f})
 
     def to_json(self) -> dict:
-        chunk_text: list = []
-        chunk_code: list = []        
-        for chunk in tqdm(self.chunk_text,
-                          desc="Converting text chunks to JSON"):
-            chunk_text.append({"chunk": chunk})
-        for chunk in tqdm(self.chunk_code,
-                          desc="Converting code chunks to JSON"):
-            chunk_code.append({"chunk": chunk})
-
-        with open(os.path.join(self.new_dir, "chunk_text.json"), "w") as f:
+        with open(os.path.join(self.new_dir, "chunk_text.json"),
+                  "w") as f:
             with tqdm(total=1, desc="Saving text chunks") as pbar:
-                json.dump(chunk_text, f, indent=4)
+                json.dump(self.chunk_text_with_source, f, indent=4)
                 pbar.update(1)
-        with open(os.path.join(self.new_dir, "chunk_code.json"), "w") as f:
+        with open(os.path.join(self.new_dir, "chunk_code.json"),
+                  "w") as f:
             with tqdm(total=1, desc="Saving code chunks") as pbar:
-                json.dump(chunk_code, f, indent=4)
+                json.dump(self.chunk_code_with_source, f, indent=4)
                 pbar.update(1)
 
     def get_files(

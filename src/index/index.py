@@ -22,9 +22,16 @@ class Index:
         self.chunker.chunk_files()
         self.chunker.to_json()
 
+        all_chunks = (self.chunker.chunk_code_with_source +
+                      self.chunker.chunk_text_with_source)
+        texts = [chunk["chunk"] for chunk in all_chunks]
+        metadatas = [{"source": chunk["source"]}
+                     for chunk in all_chunks]
+
         with tqdm(total=1, desc="Indexing chunks") as pbar:
             self.retriver = BM25Retriever.from_texts(
-                texts=self.chunker.chunk_code + self.chunker.chunk_text,
+                texts=texts,
+                metadatas=metadatas,
                 k=self.k
             )
             pbar.update(1)
