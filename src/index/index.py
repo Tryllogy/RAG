@@ -25,7 +25,9 @@ class Index:
         all_chunks = (self.chunker.chunk_code_with_source +
                       self.chunker.chunk_text_with_source)
         texts = [chunk["chunk"] for chunk in all_chunks]
-        metadatas = [{"source": chunk["source"]}
+        metadatas = [{"file_path": chunk["file_path"],
+                      "first_character_index": chunk["first_character_index"],
+                      "last_character_index": chunk["last_character_index"]}
                      for chunk in all_chunks]
 
         with tqdm(total=1, desc="Indexing chunks") as pbar:

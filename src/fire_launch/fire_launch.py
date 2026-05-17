@@ -1,6 +1,7 @@
 import json
 
 from langchain_ollama import OllamaLLM
+from ..evaluator import Evaluate
 from ..index import Index
 from ..answer import Answer
 import os
@@ -28,21 +29,9 @@ class FireLaunch:
             question: str = "",
             k: int = 5
     ) -> "FireLaunch":
-        recall: dict = {
-            1: 0,
-            3: 0,
-            5: 0,
-            10: 0
-        }
-        with open("data/datasets_public/AnsweredQuestions/dataset_code_public.json", "r") as f:
-            data = json.load(f)
-            for item in data["rag_questions"]:
-                answer_instance = Answer(question=item["question"], k=k)
-                result = answer_instance.answer()
-                for r in recall:
-                    recall[r] += answer_instance.retriver.recall_score[r]
-        for r in recall.items():
-            print(f"Recall@{r[0]}: ", round(r[1] / (len(data["rag_questions"]) * 100), 3))
+        answer_instance = Answer(question=question, k=k)
+        result = answer_instance.answer()
+        print(result)
         return self
 
     def search(self) -> "FireLaunch":
@@ -54,8 +43,9 @@ class FireLaunch:
     def answer_dataset(self) -> "FireLaunch":
         pass
 
-    def evaluate(self) -> "FireLaunch":
-        pass
+    def evaluate(self, query) -> "FireLaunch":
+        evaluate_instance: Evaluate = Evaluate()
+        print(evaluate_instance.evaluate(query=query))
 
     def __str__(self):
         return "Done"
