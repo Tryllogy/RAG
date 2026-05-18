@@ -19,7 +19,7 @@ index: install
 	clear && uv run python -m student index --max_chunk_size 2000
 
 evaluate: install
-	clear && uv run python -m student evaluate "$(QUESTION)"
+	clear && uv run python -m student evaluate
 
 clean:
 	rm -rf data/processed

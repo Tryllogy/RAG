@@ -1,5 +1,6 @@
 from ..retrieve import Retrieve
 import json
+from tqdm import tqdm
 
 
 class Evaluate:
@@ -14,20 +15,19 @@ class Evaluate:
 
     def evaluate(
             self,
-            query: str,
             k: int = 15
     ) -> tuple[dict, dict]:
         recall_k_code: dict = {
-            "1": 0,
-            "3": 0,
-            "5": 0,
-            "10": 0
+            "1": 0.0,
+            "3": 0.0,
+            "5": 0.0,
+            "10": 0.0
         }
         recall_k_text: dict = {
-            "1": 0,
-            "3": 0,
-            "5": 0,
-            "10": 0
+            "1": 0.0,
+            "3": 0.0,
+            "5": 0.0,
+            "10": 0.0
         }
         n_questions_text: int = 0
         n_questions_code: int = 0
@@ -35,75 +35,80 @@ class Evaluate:
         with open(self.code_source, "r") as f:
             content = json.load(f)
             content = content["rag_questions"]
-        for c in content:
-            n_questions_code += 1
-            for k, v in recall_k_code.items():
-                recall_k_code[k] += self.get_found(
-                    query=c["question"], k=int(k))
+        with tqdm(content, desc="Evaluating code questions") as pbar:
+            for c in content:
+                n_questions_code += 1
+                for key, v in recall_k_code.items():
+                    found = self.get_found(
+                        query=c["question"], k=int(key))
+                    recall_k_code[key] += found
+                pbar.update(1)
 
         with open(self.text_source, "r") as f:
             content = json.load(f)
             content = content["rag_questions"]
-        for c in content:
-            n_questions_text += 1
-            for k, v in recall_k_text.items():
-                recall_k_text[k] += self.get_found(
-                    query=c["question"], k=int(k))
+        with tqdm(content, desc="Evaluating text questions") as pbar:
+            for c in content:
+                n_questions_text += 1
+                for key, v in recall_k_text.items():
+                    found = self.get_found(
+                        query=c["question"], k=int(key))
+                    recall_k_text[key] += found
+                pbar.update(1)
 
+        for key, v in recall_k_code.items():
+            recall_k_code[key] = round(v / n_questions_code, 3)
+        for key, v in recall_k_text.items():
+            recall_k_text[key] = round(v / n_questions_text, 3)
         return recall_k_code, recall_k_text
 
     def get_found(
             self,
             query: str,
             k: int = 15
-    ) -> int:
-        found: int = 0
+    ) -> float:
+        found: int = 1
         results = self.retriever.retrieve(query, k=k)
         origin_sources = self.get_sources_question(query)
 
         if origin_sources is None:
-            return 0
+            return 0.0
 
-        for r in results:
-            metadata = r.metadata
-            for source in origin_sources:
+        for source in origin_sources:
+            for r in results:
+                metadata = r.metadata
                 if not source["file_path"] == metadata["file_path"]:
                     continue
 
                 overlap = self.get_overlap(source, metadata)
                 if overlap >= self.overlap_threshold:
                     found += 1
+                    break
 
-        if found == 0:
-            return 0
-
-        return (found / len(origin_sources))
+        return round(found / len(origin_sources), 3)
 
     def get_overlap(
             self,
-            source: str,
+            source: dict,
             metadata: dict
-    ) -> int:
-        range_s: list = [i for i in
-                         range(source["first_character_index"],
-                               source["last_character_index"])]
-        range_m: list = [i for i in
-                         range(metadata["first_character_index"],
-                               metadata["last_character_index"])]
-        in_common: int = len(set(range_s) & set(range_m))
+    ) -> float:
+        source_start = source["first_character_index"]
+        source_end = source["last_character_index"]
+        metadata_start = metadata["first_character_index"]
+        metadata_end = metadata["last_character_index"]
 
-        if in_common == 0:
-            return 0
+        len_s = source_end - source_start
+        if len_s == 0:
+            return 0.0
 
-        len_s: int = source["last_character_index"] - \
-            source["first_character_index"]
-
-        return min(int(in_common / len_s), 100)
+        overlap = max(0, min(source_end, metadata_end) -
+                      max(source_start, metadata_start))
+        return float(overlap / len_s)
 
     def get_sources_question(
             self,
             query: str
-    ) -> str:
+    ) -> list | None:
         with open(self.code_source, "r") as f:
             content = json.load(f)
         for c in content["rag_questions"]:

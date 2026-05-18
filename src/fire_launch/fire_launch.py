@@ -43,9 +43,14 @@ class FireLaunch:
     def answer_dataset(self) -> "FireLaunch":
         pass
 
-    def evaluate(self, query) -> "FireLaunch":
+    def evaluate(self) -> "FireLaunch":
         evaluate_instance: Evaluate = Evaluate()
-        print(evaluate_instance.evaluate(query=query))
+        recall_code, recall_text = evaluate_instance.evaluate()
+        for k, v in recall_code.items():
+            print(f"Recall@{k}: {v}")
+        for k, v in recall_text.items():
+            print(f"Recall@{k}: {v}")
+        return self
 
     def __str__(self):
         return "Done"
