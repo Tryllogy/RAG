@@ -40,7 +40,7 @@ class Evaluate:
                 n_questions_code += 1
                 for key, v in recall_k_code.items():
                     found = self.get_found(
-                        query=c["question"], k=int(key))
+                        query=c["question"], k=int(key), type_retriever="code")
                     recall_k_code[key] += found
                 pbar.update(1)
 
@@ -52,7 +52,7 @@ class Evaluate:
                 n_questions_text += 1
                 for key, v in recall_k_text.items():
                     found = self.get_found(
-                        query=c["question"], k=int(key))
+                        query=c["question"], k=int(key), type_retriever="text")
                     recall_k_text[key] += found
                 pbar.update(1)
 
@@ -65,10 +65,12 @@ class Evaluate:
     def get_found(
             self,
             query: str,
-            k: int = 15
+            type_retriever: str,
+            k: int = 15,
     ) -> float:
-        found: int = 1
-        results = self.retriever.retrieve(query, k=k)
+        found: int = 0
+        results = self.retriever.retrieve(
+            query, k=k, type_retriever=type_retriever)
         origin_sources = self.get_sources_question(query)
 
         if origin_sources is None:

@@ -22,14 +22,34 @@ class Index:
         self.chunker.chunk_files()
         self.chunker.to_json()
 
-        all_chunks = (self.chunker.chunk_code_with_source +
-                      self.chunker.chunk_text_with_source)
-        texts = [chunk["chunk"] for chunk in all_chunks]
+        code_path = "data/processed/bm25_index/bm25_code_index.pkl"
+        text_path = "data/processed/bm25_index/bm25_text_index.pkl"
+
+        if not os.path.exists("data/processed/bm25_index"):
+            os.makedirs("data/processed/bm25_index", exist_ok=True)
+
+        chunk_code = self.chunker.chunk_code_with_source
+        texts = [chunk["chunk"] for chunk in chunk_code]
         metadatas = [{"file_path": chunk["file_path"],
                       "first_character_index": chunk["first_character_index"],
                       "last_character_index": chunk["last_character_index"]}
-                     for chunk in all_chunks]
+                     for chunk in chunk_code]
+        self.save_index(code_path, texts, metadatas)
 
+        chunk_text = self.chunker.chunk_text_with_source
+        texts = [chunk["chunk"] for chunk in chunk_text]
+        metadatas = [{"file_path": chunk["file_path"],
+                      "first_character_index": chunk["first_character_index"],
+                      "last_character_index": chunk["last_character_index"]}
+                     for chunk in chunk_text]
+        self.save_index(text_path, texts, metadatas)
+
+    def save_index(
+            self,
+            file_path: str,
+            texts: list[str],
+            metadatas: list[dict]
+    ) -> None:
         with tqdm(total=1, desc="Indexing chunks") as pbar:
             self.retriver = BM25Retriever.from_texts(
                 texts=texts,
@@ -37,9 +57,7 @@ class Index:
                 k=self.k
             )
             pbar.update(1)
-
-        os.makedirs("data/processed/bm25_index", exist_ok=True)
-        with open("data/processed/bm25_index/bm25.pkl", "wb") as f:
-            with tqdm(total=1, desc="Saving BM25 index") as pbar:
+        with open(file_path, "wb") as f:
+            with tqdm(total=1, desc="Saving BM25 for text index") as pbar:
                 pickle.dump(self.retriver, f)
                 pbar.update(1)

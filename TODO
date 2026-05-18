@@ -29,5 +29,5 @@ Fire :
     --save_directory PATH/TO/RESULT_DIR
     --student_search_results_path PATH/TO/RESULT.json
 
-
-Chunking :
+Python sep : ['\nclass ', '\ndef ', '\n\tdef ', '\n\n', '\n', ' ', '']
+qwen2.5:1.5b

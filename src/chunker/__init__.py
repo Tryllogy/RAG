@@ -1,5 +1,6 @@
-from .chunker import Chunk
+from .chunker import Chunk, PythonSplitter
 
 __all__ = [
-    "Chunk"
+    "Chunk",
+    "PythonSplitter"
 ]
