@@ -4,74 +4,59 @@ from tqdm import tqdm
 
 
 class Evaluate:
-    def __init__(self):
+    def __init__(
+            self,
+            student_answer_path: str,
+            dataset_path: str
+    ):
         self.sources: list | None = None
         self.overlap_threshold: float = 0.05
         self.retriever = Retrieve()
-        self.code_source = "data/datasets_public/" \
-            "AnsweredQuestions/dataset_code_public.json"
-        self.text_source = "data/datasets_public/" \
-            "AnsweredQuestions/dataset_docs_public.json"
+        self.student_answer_path: str = student_answer_path
+        self.dataset_path: str = dataset_path
 
     def evaluate(
             self,
             k: int = 15
     ) -> tuple[dict, dict]:
-        recall_k_code: dict = {
+        recall_k: dict = {
             "1": 0.0,
             "3": 0.0,
             "5": 0.0,
             "10": 0.0
         }
-        recall_k_text: dict = {
-            "1": 0.0,
-            "3": 0.0,
-            "5": 0.0,
-            "10": 0.0
-        }
-        n_questions_text: int = 0
-        n_questions_code: int = 0
+        n_questions: int = 0
 
-        with open(self.code_source, "r") as f:
+        type_file: str = self.student_answer_path.split("/")[-1]
+        type_file = type_file.split("_")[1]
+        with open(self.student_answer_path, "r") as f:
             content = json.load(f)
-            content = content["rag_questions"]
-        with tqdm(content, desc="Evaluating code questions") as pbar:
+        with tqdm(content, desc="Evaluating questions") as pbar:
             for c in content:
-                n_questions_code += 1
-                for key, v in recall_k_code.items():
+                c = c["search_results"][0]
+                n_questions += 1
+                for key, v in recall_k.items():
                     found = self.get_found(
-                        query=c["question"], k=int(key), type_retriever="code")
-                    recall_k_code[key] += found
+                        query=c["question"], question_id=c["question_id"],
+                        k=int(key), type_retriever=type_file)
+                    recall_k[key] += found
                 pbar.update(1)
 
-        with open(self.text_source, "r") as f:
-            content = json.load(f)
-            content = content["rag_questions"]
-        with tqdm(content, desc="Evaluating text questions") as pbar:
-            for c in content:
-                n_questions_text += 1
-                for key, v in recall_k_text.items():
-                    found = self.get_found(
-                        query=c["question"], k=int(key), type_retriever="text")
-                    recall_k_text[key] += found
-                pbar.update(1)
-
-        for key, v in recall_k_code.items():
-            recall_k_code[key] = round(v / n_questions_code, 3)
-        for key, v in recall_k_text.items():
-            recall_k_text[key] = round(v / n_questions_text, 3)
-        return recall_k_code, recall_k_text
+        for key, v in recall_k.items():
+            recall_k[key] = round(v / n_questions, 3)
+        return recall_k
 
     def get_found(
             self,
             query: str,
+            question_id: str,
             type_retriever: str,
             k: int = 15,
     ) -> float:
         found: int = 0
         results = self.retriever.retrieve(
             query, k=k, type_retriever=type_retriever)
-        origin_sources = self.get_sources_question(query)
+        origin_sources = self.get_sources_question(question_id)
 
         if origin_sources is None:
             return 0.0
@@ -109,17 +94,19 @@ class Evaluate:
 
     def get_sources_question(
             self,
-            query: str
+            question_id: str
     ) -> list | None:
-        with open(self.code_source, "r") as f:
+        with open("data/datasets/AnsweredQuestions/dataset_code_public.json",
+                  "r") as f:
             content = json.load(f)
         for c in content["rag_questions"]:
-            if c["question"] == query:
+            if c["question_id"] == question_id:
                 return c["sources"]
 
-        with open(self.text_source, "r") as f:
+        with open("data/datasets/AnsweredQuestions/dataset_docs_public.json",
+                  "r") as f:
             content = json.load(f)
         for c in content["rag_questions"]:
-            if c["question"] == query:
+            if c["question_id"] == question_id:
                 return c["sources"]
         return None

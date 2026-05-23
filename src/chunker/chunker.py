@@ -3,31 +3,25 @@ import os
 import json
 from tqdm import tqdm
 from .python_splitter import PythonSplitter
+from ..validators import MinimalSource
 
 
 class Chunk:
 
     ignored_files: list = [
-        "setup.py",
-        ".toml",
-        ".yaml",
-        ".sh",
-        ".gitignore",
-        ".dockerignore",
-        ".clang-format",
-        ".shellcheckrc",
-        ".yapfignore",
-        "DCO",
-        ".jinja",
-        ".png",
-        ".jpg",
-        ".patch",
-        ".ico"
+        "setup.py"
+    ]
+
+    authorized_files: list = [
+        ".txt",
+        ".py",
+        ".md",
+        ".rst"
     ]
 
     def __init__(
             self,
-            type_file: str = "text",
+            type_file: str = "docs",
             separators: list[str] | None = None,
             max_chunk_size: int = 3000,
             chunk_overlap: int = 500
@@ -60,7 +54,7 @@ class Chunk:
             )
         splitter_code: PythonSplitter = PythonSplitter()
         self.splitters: dict = {
-            "text": splitter_text,
+            "docs": splitter_text,
             "code": splitter_code
         }
 
@@ -81,7 +75,7 @@ class Chunk:
             if f.endswith(".py"):
                 self.type_file = "code"
             else:
-                self.type_file = "text"
+                self.type_file = "docs"
 
             chunks = self.chunk(text)
             for chunk in chunks:
@@ -90,6 +84,7 @@ class Chunk:
                     start_idx = text.find(chunk)
                 end_idx: int = start_idx + len(chunk)
                 current_pos = end_idx
+                current_pos = end_idx
 
                 chunk_data = {
                     "chunk": chunk,
@@ -97,7 +92,7 @@ class Chunk:
                     "first_character_index": start_idx,
                     "last_character_index": end_idx,
                 }
-
+                MinimalSource(**chunk_data)
                 if f.endswith(".py"):
                     self.chunk_code.append(chunk)
                     self.chunk_code_with_source.append(chunk_data)
@@ -106,9 +101,9 @@ class Chunk:
                     self.chunk_text_with_source.append(chunk_data)
 
     def to_json(self) -> None:
-        with open(os.path.join(self.new_dir, "chunk_text.json"), "w",
+        with open(os.path.join(self.new_dir, "chunk_docs.json"), "w",
                   encoding="utf-8") as f:
-            with tqdm(total=1, desc="Saving text chunks") as pbar:
+            with tqdm(total=1, desc="Saving docs chunks") as pbar:
                 json.dump(self.chunk_text_with_source, f, indent=4)
                 pbar.update(1)
         with open(os.path.join(self.new_dir, "chunk_code.json"), "w",
@@ -126,10 +121,11 @@ class Chunk:
             current_path = os.path.join(directory, direc)
             if os.path.abspath(current_path) == os.path.abspath(self.new_dir):
                 continue
-            if (direc.endswith(tuple(Chunk.ignored_files)) or
+            elif (direc.endswith(tuple(Chunk.ignored_files)) or
                     direc in Chunk.ignored_files):
                 continue
-            if os.path.isdir(current_path):
+            elif os.path.isdir(current_path):
                 self.get_files(current_path)
-            else:
+            elif (direc.endswith(tuple(Chunk.authorized_files)) or
+                    direc in Chunk.authorized_files):
                 self.files.append(current_path)

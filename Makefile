@@ -4,9 +4,7 @@ QUESTION := What determines whether vLLM's sampler returns Pythonized results or
 
 install:
 	$(UV) sync
-# 	ollama serve
-# 	ollama pull qwen3
-# 	ollama launch qwen3
+# 	ollama pull qwen3:0.6b
 	
 
 run: install
@@ -18,8 +16,18 @@ answer: install
 index: install
 	clear && uv run python -m student index --max_chunk_size 2000
 
-evaluate: install
-	clear && uv run python -m student evaluate
+evaluatecode: install
+	clear && uv run python -m student evaluate data/output/search_results/dataset_code_public.json data/datasets/AnsweredQuestions/dataset_code_public.json --k 10
+
+evaluatedoc: install
+	clear && uv run python -m student evaluate data/output/search_results/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json --k 10
 
 clean:
 	rm -rf data/processed
+	rm -rf data/output
+
+datadoc:
+	clear && uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_docs_public.json --k 10 --save_directory data/output/search_results
+
+datacode:
+		clear && uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_code_public.json --k 10 --save_directory data/output/search_results

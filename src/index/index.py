@@ -23,7 +23,7 @@ class Index:
         self.chunker.to_json()
 
         code_path = "data/processed/bm25_index/bm25_code_index.pkl"
-        text_path = "data/processed/bm25_index/bm25_text_index.pkl"
+        text_path = "data/processed/bm25_index/bm25_docs_index.pkl"
 
         if not os.path.exists("data/processed/bm25_index"):
             os.makedirs("data/processed/bm25_index", exist_ok=True)
@@ -58,6 +58,6 @@ class Index:
             )
             pbar.update(1)
         with open(file_path, "wb") as f:
-            with tqdm(total=1, desc="Saving BM25 for text index") as pbar:
+            with tqdm(total=1, desc="Saving BM25 for docs index") as pbar:
                 pickle.dump(self.retriver, f)
                 pbar.update(1)

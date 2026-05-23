@@ -7,15 +7,15 @@ class Retrieve:
     ):
         self.retriever: dict = {
             "code": None,
-            "text": None
+            "docs": None
         }
         try:
             with open("data/processed/bm25_index/bm25_code_index.pkl",
                       "rb") as f:
                 self.retriever["code"] = pickle.load(f)
-            with open("data/processed/bm25_index/bm25_text_index.pkl",
+            with open("data/processed/bm25_index/bm25_docs_index.pkl",
                       "rb") as f:
-                self.retriever["text"] = pickle.load(f)
+                self.retriever["docs"] = pickle.load(f)
         except FileNotFoundError:
             raise FileNotFoundError(
                 "Index file not found. Please run the indexer first.")

@@ -1,9 +1,8 @@
-import json
-
 from langchain_ollama import OllamaLLM
 from ..evaluator import Evaluate
 from ..index import Index
 from ..answer import Answer
+from ..search_dataset import SearchDataset
 import os
 
 
@@ -37,18 +36,32 @@ class FireLaunch:
     def search(self) -> "FireLaunch":
         pass
 
-    def search_dataset(self) -> "FireLaunch":
-        pass
+    def search_dataset(
+            self,
+            dataset_path: str,
+            k: int = 15,
+            save_directory: str = "data/output/search_results"
+    ) -> "FireLaunch":
+        search_dataset: SearchDataset = SearchDataset(
+            dataset_path, k, save_directory)
+        search_dataset.search_dataset()
+        return self
 
     def answer_dataset(self) -> "FireLaunch":
         pass
 
-    def evaluate(self) -> "FireLaunch":
-        evaluate_instance: Evaluate = Evaluate()
-        recall_code, recall_text = evaluate_instance.evaluate()
-        for k, v in recall_code.items():
-            print(f"Recall@{k}: {v}")
-        for k, v in recall_text.items():
+    def evaluate(
+            self,
+            student_answer_path: str,
+            dataset_path: str,
+            k: int = 15
+    ) -> "FireLaunch":
+        evaluate_instance: Evaluate = Evaluate(
+            student_answer_path=student_answer_path,
+            dataset_path=dataset_path
+        )
+        recall = evaluate_instance.evaluate(k=k)
+        for k, v in recall.items():
             print(f"Recall@{k}: {v}")
         return self
 
