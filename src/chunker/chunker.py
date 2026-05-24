@@ -68,37 +68,41 @@ class Chunk:
             self
     ) -> None:
         for f in tqdm(self.files, desc="Chunking files"):
-            current_pos: int = 0
             with open(f, "r", encoding="utf-8") as file:
                 text = file.read()
 
+            if len(text) == 0:
+                continue
             if f.endswith(".py"):
                 self.type_file = "code"
             else:
                 self.type_file = "docs"
 
             chunks = self.chunk(text)
-            for chunk in chunks:
-                start_idx: int = text.find(chunk, current_pos)
-                if start_idx == -1:
-                    start_idx = text.find(chunk)
-                end_idx: int = start_idx + len(chunk)
-                current_pos = end_idx
-                current_pos = end_idx
 
-                chunk_data = {
+            for chunk_data in chunks:
+                if isinstance(chunk_data, tuple):
+                    chunk, start_idx, end_idx = chunk_data
+                else:
+                    chunk = chunk_data
+                    start_idx = text.find(chunk)
+                    if start_idx == -1:
+                        start_idx = 0
+                    end_idx = start_idx + len(chunk)
+
+                chunk_info = {
                     "chunk": chunk,
                     "file_path": f,
                     "first_character_index": start_idx,
                     "last_character_index": end_idx,
                 }
-                MinimalSource(**chunk_data)
+                MinimalSource(**chunk_info)
                 if f.endswith(".py"):
                     self.chunk_code.append(chunk)
-                    self.chunk_code_with_source.append(chunk_data)
+                    self.chunk_code_with_source.append(chunk_info)
                 else:
                     self.chunk_text.append(chunk)
-                    self.chunk_text_with_source.append(chunk_data)
+                    self.chunk_text_with_source.append(chunk_info)
 
     def to_json(self) -> None:
         with open(os.path.join(self.new_dir, "chunk_docs.json"), "w",

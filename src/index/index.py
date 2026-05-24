@@ -2,7 +2,7 @@ from typing import Any
 from tqdm import tqdm
 from ..chunker import Chunk
 from langchain_community.retrievers import BM25Retriever
-import pickle
+import numpy as np
 import os
 
 
@@ -22,8 +22,8 @@ class Index:
         self.chunker.chunk_files()
         self.chunker.to_json()
 
-        code_path = "data/processed/bm25_index/bm25_code_index.pkl"
-        text_path = "data/processed/bm25_index/bm25_docs_index.pkl"
+        code_path = "data/processed/bm25_index/bm25_code_index.npy"
+        text_path = "data/processed/bm25_index/bm25_docs_index.npy"
 
         if not os.path.exists("data/processed/bm25_index"):
             os.makedirs("data/processed/bm25_index", exist_ok=True)
@@ -59,5 +59,5 @@ class Index:
             pbar.update(1)
         with open(file_path, "wb") as f:
             with tqdm(total=1, desc="Saving BM25 for docs index") as pbar:
-                pickle.dump(self.retriver, f)
+                np.save(f, self.retriver)
                 pbar.update(1)

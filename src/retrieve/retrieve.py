@@ -1,4 +1,4 @@
-import pickle
+import numpy as np
 
 
 class Retrieve:
@@ -10,12 +10,16 @@ class Retrieve:
             "docs": None
         }
         try:
-            with open("data/processed/bm25_index/bm25_code_index.pkl",
+            with open("data/processed/bm25_index/bm25_code_index.npy",
                       "rb") as f:
-                self.retriever["code"] = pickle.load(f)
-            with open("data/processed/bm25_index/bm25_docs_index.pkl",
+                loaded = np.load(f, allow_pickle=True)
+                self.retriever["code"] = (
+                    loaded.item() if loaded.size == 1 else loaded)
+            with open("data/processed/bm25_index/bm25_docs_index.npy",
                       "rb") as f:
-                self.retriever["docs"] = pickle.load(f)
+                loaded = np.load(f, allow_pickle=True)
+                self.retriever["docs"] = (
+                    loaded.item() if loaded.size == 1 else loaded)
         except FileNotFoundError:
             raise FileNotFoundError(
                 "Index file not found. Please run the indexer first.")
