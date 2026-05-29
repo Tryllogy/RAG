@@ -4,6 +4,7 @@ from ..chunker import Chunk
 from langchain_community.retrievers import BM25Retriever
 import numpy as np
 import os
+import re
 
 
 class Index:
@@ -32,32 +33,81 @@ class Index:
         texts = [chunk["chunk"] for chunk in chunk_code]
         metadatas = [{"file_path": chunk["file_path"],
                       "first_character_index": chunk["first_character_index"],
-                      "last_character_index": chunk["last_character_index"]}
+                      "last_character_index": chunk["last_character_index"],
+                      "name": chunk["name"],
+                      "type": chunk["type"],
+                      "docstring": chunk["docstring"],
+                      "parent": chunk["parent"]}
                      for chunk in chunk_code]
-        self.save_index(code_path, texts, metadatas)
+        self.save_index(
+            code_path,
+            texts,
+            metadatas,
+            preprocess_func=self._preprocess_code,
+        )
 
         chunk_text = self.chunker.chunk_text_with_source
         texts = [chunk["chunk"] for chunk in chunk_text]
         metadatas = [{"file_path": chunk["file_path"],
                       "first_character_index": chunk["first_character_index"],
-                      "last_character_index": chunk["last_character_index"]}
-                     for chunk in chunk_text]
-        self.save_index(text_path, texts, metadatas)
+                      "last_character_index": chunk["last_character_index"],
+                      } for chunk in chunk_text]
+        self.save_index(
+            text_path,
+            texts,
+            metadatas,
+            preprocess_func=self._preprocess_text,
+        )
 
     def save_index(
             self,
             file_path: str,
             texts: list[str],
-            metadatas: list[dict]
+            metadatas: list[dict],
+            preprocess_func=None
     ) -> None:
         with tqdm(total=1, desc="Indexing chunks") as pbar:
             self.retriver = BM25Retriever.from_texts(
                 texts=texts,
                 metadatas=metadatas,
-                k=self.k
+                k=self.k,
+                preprocess_func=preprocess_func,
             )
             pbar.update(1)
         with open(file_path, "wb") as f:
             with tqdm(total=1, desc="Saving BM25 for docs index") as pbar:
-                np.save(f, self.retriver)
+                np.save(
+                    f,
+                    {
+                        "texts": texts,
+                        "metadatas": metadatas,
+                        "k": self.k,
+                    },
+                    allow_pickle=True,
+                )
                 pbar.update(1)
+
+    def _preprocess_code(self, text: str) -> list[str]:
+        """Tokenize Python code in a BM25-friendly way.
+
+        Split on non-alphanumeric boundaries and also break snake_case and
+        camelCase identifiers so terms like `handle_connection_error` become
+        searchable as `handle`, `connection`, and `error`.
+        """
+        tokens: list[str] = []
+        for raw_token in re.findall(r"[A-Za-z_][A-Za-z0-9_]*|\d+", text):
+            parts = [part for part in raw_token.split("_") if part]
+            for part in parts:
+                sub_parts = re.findall(
+                    r"[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)|\d+",
+                    part,
+                )
+                if sub_parts:
+                    tokens.extend(token.lower() for token in sub_parts)
+                else:
+                    tokens.append(part.lower())
+        return tokens
+
+    def _preprocess_text(self, text: str) -> list[str]:
+        """Simple lowercased word tokenizer for prose chunks."""
+        return re.findall(r"[A-Za-z0-9_]+", text.lower())

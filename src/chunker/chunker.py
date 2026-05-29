@@ -81,20 +81,34 @@ class Chunk:
             chunks = self.chunk(text)
 
             for chunk_data in chunks:
-                if isinstance(chunk_data, tuple):
-                    chunk, start_idx, end_idx = chunk_data
+                if isinstance(chunk_data, dict):
+                    chunk = chunk_data["content"]
+                    start_idx = chunk_data["first_character_index"]
+                    end_idx = chunk_data["last_character_index"]
+                    name = chunk_data.get("name", "unknown")
+                    type_chunk = chunk_data.get("type", "unknown")
+                    docstring = chunk_data.get("docstring", None)
+                    parent = chunk_data.get("parent", None)
                 else:
                     chunk = chunk_data
                     start_idx = text.find(chunk)
                     if start_idx == -1:
                         start_idx = 0
                     end_idx = start_idx + len(chunk)
+                    name = "unknown"
+                    type_chunk = "unknown"
+                    docstring = None
+                    parent = None
 
                 chunk_info = {
                     "chunk": chunk,
                     "file_path": f,
                     "first_character_index": start_idx,
                     "last_character_index": end_idx,
+                    "name": name,
+                    "type": type_chunk,
+                    "docstring": docstring,
+                    "parent": parent
                 }
                 MinimalSource(**chunk_info)
                 if f.endswith(".py"):

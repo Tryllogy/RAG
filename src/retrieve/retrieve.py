@@ -1,4 +1,6 @@
 import numpy as np
+from langchain_community.retrievers import BM25Retriever
+import re
 
 
 class Retrieve:
@@ -13,16 +15,52 @@ class Retrieve:
             with open("data/processed/bm25_index/bm25_code_index.npy",
                       "rb") as f:
                 loaded = np.load(f, allow_pickle=True)
-                self.retriever["code"] = (
-                    loaded.item() if loaded.size == 1 else loaded)
+                payload = loaded.item() if loaded.size == 1 else loaded
+                self.retriever["code"] = self._build_retriever(
+                    payload,
+                    self._preprocess_code,
+                )
             with open("data/processed/bm25_index/bm25_docs_index.npy",
                       "rb") as f:
                 loaded = np.load(f, allow_pickle=True)
-                self.retriever["docs"] = (
-                    loaded.item() if loaded.size == 1 else loaded)
+                payload = loaded.item() if loaded.size == 1 else loaded
+                self.retriever["docs"] = self._build_retriever(
+                    payload,
+                    self._preprocess_text,
+                )
         except FileNotFoundError:
             raise FileNotFoundError(
                 "Index file not found. Please run the indexer first.")
+
+    def _build_retriever(self, payload, preprocess_func):
+        if isinstance(payload, BM25Retriever):
+            return payload
+        if not isinstance(payload, dict):
+            raise TypeError("Invalid BM25 index payload")
+        return BM25Retriever.from_texts(
+            texts=payload["texts"],
+            metadatas=payload["metadatas"],
+            k=payload.get("k", 15),
+            preprocess_func=preprocess_func,
+        )
+
+    def _preprocess_code(self, text: str) -> list[str]:
+        tokens: list[str] = []
+        for raw_token in re.findall(r"[A-Za-z_][A-Za-z0-9_]*|\d+", text):
+            parts = [part for part in raw_token.split("_") if part]
+            for part in parts:
+                sub_parts = re.findall(
+                    r"[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)|\d+",
+                    part,
+                )
+                if sub_parts:
+                    tokens.extend(token.lower() for token in sub_parts)
+                else:
+                    tokens.append(part.lower())
+        return tokens
+
+    def _preprocess_text(self, text: str) -> list[str]:
+        return re.findall(r"[A-Za-z0-9_]+", text.lower())
 
     def retrieve(
             self,
