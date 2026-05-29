@@ -1,6 +1,6 @@
 import numpy as np
 from langchain_community.retrievers import BM25Retriever
-import re
+from ..process_code import ProcessCode
 
 
 class Retrieve:
@@ -18,7 +18,7 @@ class Retrieve:
                 payload = loaded.item() if loaded.size == 1 else loaded
                 self.retriever["code"] = self._build_retriever(
                     payload,
-                    self._preprocess_code,
+                    ProcessCode._preprocess_code,
                 )
             with open("data/processed/bm25_index/bm25_docs_index.npy",
                       "rb") as f:
@@ -26,7 +26,7 @@ class Retrieve:
                 payload = loaded.item() if loaded.size == 1 else loaded
                 self.retriever["docs"] = self._build_retriever(
                     payload,
-                    self._preprocess_text,
+                    ProcessCode._preprocess_text,
                 )
         except FileNotFoundError:
             raise FileNotFoundError(
@@ -43,24 +43,6 @@ class Retrieve:
             k=payload.get("k", 15),
             preprocess_func=preprocess_func,
         )
-
-    def _preprocess_code(self, text: str) -> list[str]:
-        tokens: list[str] = []
-        for raw_token in re.findall(r"[A-Za-z_][A-Za-z0-9_]*|\d+", text):
-            parts = [part for part in raw_token.split("_") if part]
-            for part in parts:
-                sub_parts = re.findall(
-                    r"[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)|\d+",
-                    part,
-                )
-                if sub_parts:
-                    tokens.extend(token.lower() for token in sub_parts)
-                else:
-                    tokens.append(part.lower())
-        return tokens
-
-    def _preprocess_text(self, text: str) -> list[str]:
-        return re.findall(r"[A-Za-z0-9_]+", text.lower())
 
     def retrieve(
             self,

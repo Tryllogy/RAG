@@ -4,7 +4,7 @@ from ..chunker import Chunk
 from langchain_community.retrievers import BM25Retriever
 import numpy as np
 import os
-import re
+from ..process_code import ProcessCode
 
 
 class Index:
@@ -43,7 +43,7 @@ class Index:
             code_path,
             texts,
             metadatas,
-            preprocess_func=self._preprocess_code,
+            preprocess_func=ProcessCode._preprocess_code,
         )
 
         chunk_text = self.chunker.chunk_text_with_source
@@ -56,7 +56,7 @@ class Index:
             text_path,
             texts,
             metadatas,
-            preprocess_func=self._preprocess_text,
+            preprocess_func=ProcessCode._preprocess_text,
         )
 
     def save_index(
@@ -86,28 +86,3 @@ class Index:
                     allow_pickle=True,
                 )
                 pbar.update(1)
-
-    def _preprocess_code(self, text: str) -> list[str]:
-        """Tokenize Python code in a BM25-friendly way.
-
-        Split on non-alphanumeric boundaries and also break snake_case and
-        camelCase identifiers so terms like `handle_connection_error` become
-        searchable as `handle`, `connection`, and `error`.
-        """
-        tokens: list[str] = []
-        for raw_token in re.findall(r"[A-Za-z_][A-Za-z0-9_]*|\d+", text):
-            parts = [part for part in raw_token.split("_") if part]
-            for part in parts:
-                sub_parts = re.findall(
-                    r"[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)|\d+",
-                    part,
-                )
-                if sub_parts:
-                    tokens.extend(token.lower() for token in sub_parts)
-                else:
-                    tokens.append(part.lower())
-        return tokens
-
-    def _preprocess_text(self, text: str) -> list[str]:
-        """Simple lowercased word tokenizer for prose chunks."""
-        return re.findall(r"[A-Za-z0-9_]+", text.lower())
