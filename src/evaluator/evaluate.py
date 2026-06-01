@@ -9,7 +9,6 @@ class Evaluate:
             student_answer_path: str,
             dataset_path: str
     ):
-        self.sources: list | None = None
         self.overlap_threshold: float = 0.05
         self.retriever = Retrieve()
         self.student_answer_path: str = student_answer_path

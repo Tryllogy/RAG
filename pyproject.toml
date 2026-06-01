@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.0",
     "fire",
     "langchain_ollama",
+    "langchain_core",
     "langchain-text-splitters",
     "langchain_community",
     "bm25",

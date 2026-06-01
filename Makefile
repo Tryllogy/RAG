@@ -4,7 +4,7 @@ QUESTION := What determines whether vLLM's sampler returns Pythonized results or
 
 install:
 	$(UV) sync
-# 	ollama pull qwen3:0.6b
+	ollama pull qwen3:0.6b
 	
 
 run: install
