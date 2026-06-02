@@ -1,6 +1,6 @@
 UV := uv
 SRC := student
-QUESTION := What determines whether vLLM's sampler returns Pythonized results or deferred Pythonization arguments?
+QUESTION := What activation formats does the fused batched MoE layer return in vLLM?
 
 install:
 	$(UV) sync

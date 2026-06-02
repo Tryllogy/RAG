@@ -31,3 +31,5 @@ Fire :
 
 Python sep : ['\nclass ', '\ndef ', '\n\tdef ', '\n\n', '\n', ' ', '']
 qwen2.5:1.5b
+
+Utiliser les validators pour les answered

@@ -3,6 +3,9 @@ from ..evaluator import Evaluate
 from ..index import Index
 from ..answer import Answer
 from ..search_dataset import SearchDataset
+from ..validators import StudentSearchResultsAndAnswer, MinimalAnswer
+from tqdm import tqdm
+import json
 import os
 
 
@@ -29,8 +32,7 @@ class FireLaunch:
             k: int = 5
     ) -> "FireLaunch":
         answer_instance = Answer(question=question, k=k)
-        result = answer_instance.answer()
-        print(result)
+        answer_instance.answer()
         return self
 
     def search(self) -> "FireLaunch":
@@ -47,8 +49,33 @@ class FireLaunch:
         search_dataset.search_dataset()
         return self
 
-    def answer_dataset(self) -> "FireLaunch":
-        pass
+    def answer_dataset(
+            self,
+            student_search_results_path: str,
+            save_directory: str
+    ) -> "FireLaunch":
+        answer_instance = Answer()
+        with open(student_search_results_path, "r") as f:
+            student_results = json.load(f)
+            student_results = student_results["search_results"]
+        responses: list = []
+        with tqdm(total=len(student_results),
+                  desc="Answering questions") as pbar:
+            for r in student_results:
+                answer_instance.question = r["question"]
+                answer = answer_instance.answer()
+                response = {
+                    "search_results": r["search_results"]
+                }
+                response["search_results"]["answer"] = answer
+                MinimalAnswer(**response)
+                responses.append(response)
+                pbar.update(1)
+        search_result: dict = {"search_results": responses}
+        StudentSearchResultsAndAnswer(**search_result)
+        with open(save_directory, "w") as f:
+            json.dump(search_result, f)
+        return self
 
     def evaluate(
             self,
