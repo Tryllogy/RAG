@@ -18,7 +18,7 @@ class SearchDataset():
         self.save_dir: str = save_dir
         self.retriever = Retrieve()
 
-    def search_dataset(self):
+    def search_dataset(self) -> None:
         retrieved: list = []
         with open(self.dataset_path, "r", encoding="utf-8") as f:
             data: dict = json.load(f)
@@ -52,7 +52,7 @@ class SearchDataset():
     def search_query(
             self,
             query: str,
-    ):
+    ) -> None:
         retrieved: list = []
         with open(self.dataset_path, "r", encoding="utf-8") as f:
             data: dict = json.load(f)

@@ -1,3 +1,5 @@
+from typing import Any
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os
 import json
@@ -44,7 +46,7 @@ class Chunk:
             self,
             chunk_size: int,
             chunk_overlap: int,
-            separators: list[str] = ["\n\n"]
+            separators: list[str] | None = ["\n\n"]
     ) -> None:
         splitter_text: RecursiveCharacterTextSplitter = \
             RecursiveCharacterTextSplitter(
@@ -61,7 +63,7 @@ class Chunk:
     def chunk(
             self,
             file_str: str
-    ) -> list[str]:
+    ) -> Any:
         return self.splitters[self.type_file].split_text(file_str)
 
     def chunk_files(

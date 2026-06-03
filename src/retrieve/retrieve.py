@@ -1,3 +1,5 @@
+from typing import Any, Callable
+
 import numpy as np
 from langchain_community.retrievers import BM25Retriever
 from ..process_code import ProcessCode
@@ -6,7 +8,7 @@ from ..process_code import ProcessCode
 class Retrieve:
     def __init__(
             self
-    ):
+    ) -> None:
         self.retriever: dict = {
             "code": None,
             "docs": None
@@ -32,7 +34,11 @@ class Retrieve:
             raise FileNotFoundError(
                 "Index file not found. Please run the indexer first.")
 
-    def _build_retriever(self, payload, preprocess_func):
+    def _build_retriever(
+            self,
+            payload: dict | BM25Retriever,
+            preprocess_func: Callable
+    ) -> BM25Retriever:
         if isinstance(payload, BM25Retriever):
             return payload
         if not isinstance(payload, dict):
@@ -49,7 +55,7 @@ class Retrieve:
             query: str,
             k: int = 15,
             type_retriever: str = "code"
-    ):
+    ) -> Any:
         save_k: int = self.retriever[type_retriever].k
         if k > save_k:
             print(

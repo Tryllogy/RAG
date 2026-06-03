@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..retrieve import Retrieve
 import json
 from tqdm import tqdm
@@ -17,7 +19,7 @@ class Evaluate:
     def evaluate(
             self,
             k: int = 15
-    ) -> tuple[dict, dict]:
+    ) -> dict:
         recall_k: dict = {
             "1": 0.0,
             "3": 0.0,
@@ -94,7 +96,7 @@ class Evaluate:
     def get_sources_question(
             self,
             question_id: str
-    ) -> list | None:
+    ) -> Any:
         with open("data/datasets/AnsweredQuestions/dataset_code_public.json",
                   "r") as f:
             content = json.load(f)

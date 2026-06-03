@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable
 from tqdm import tqdm
 from ..chunker import Chunk
 from langchain_community.retrievers import BM25Retriever
@@ -69,7 +69,7 @@ class Index:
             file_path: str,
             texts: list[str],
             metadatas: list[dict],
-            preprocess_func=None
+            preprocess_func: Callable | None = None
     ) -> None:
         with tqdm(total=1, desc="Indexing chunks") as pbar:
             self.retriver = BM25Retriever.from_texts(

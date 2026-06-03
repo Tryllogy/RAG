@@ -1,3 +1,5 @@
+from typing import Any
+
 from ..retrieve import Retrieve
 from langchain_ollama import ChatOllama
 import json
@@ -32,7 +34,7 @@ class Answer:
 
     def answer(
             self
-    ) -> str:
+    ) -> Any:
         type_question: str = self.find_question(self.question)
         retrieved = self.retriver.retrieve(
             query=self.question, k=self.k, type_retriever=type_question)
@@ -59,7 +61,10 @@ class Answer:
         result = self.llm.invoke(message)
         return result.content.split("</think>")[0]
 
-    def find_question(self, question: str):
+    def find_question(
+            self,
+            question: str
+    ) -> str:
         with open(self.data_code_path, "r") as f:
             content = json.load(f)
             content = content["rag_questions"]

@@ -13,7 +13,10 @@ run: install
 answer: install
 	clear && uv run python -m student answer "$(QUESTION)" --k 10
 
-dataanswer: install
+answercode: install
+	clear && uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_code_public.json --save_directory data/output/search_results_and_answer
+
+answerdoc: install
 	clear && uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_docs_public.json --save_directory data/output/search_results_and_answer
 
 search: install
@@ -28,12 +31,19 @@ evaluatecode: install
 evaluatedoc: install
 	clear && uv run python -m student evaluate data/output/search_results/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json --k 10
 
-clean:
-	rm -rf data/processed
-	rm -rf data/output
-
 datadoc:
 	clear && uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_docs_public.json --k 10 --save_directory data/output/search_results
 
 datacode:
 		clear && uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_code_public.json --k 10 --save_directory data/output/search_results
+
+lint:
+	flake8 src/*
+	mypy ./src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	flake8 student/*
+	mypy ./student --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+clean:
+	find . -type d -name "__pycache__" | xargs rm -rf || true
+	rm -rf .mypy_cache .pytest_cache build dist *.egg-info
+	rm -rf data/processed data/output

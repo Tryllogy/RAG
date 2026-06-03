@@ -1,9 +1,13 @@
 import ast
+from typing import Any
 
 
 class PythonSplitter:
 
-    def split_text(self, source: str) -> list[dict]:
+    def split_text(
+            self,
+            source: str
+    ) -> list[dict]:
         tree = ast.parse(source)
         lines = source.splitlines(keepends=True)
 
@@ -75,7 +79,11 @@ class PythonSplitter:
 
         return chunks
 
-    def _extract_module_header(self, source: str, tree: ast.Module) -> str:
+    def _extract_module_header(
+            self,
+            source: str,
+            tree: ast.Module
+    ) -> str:
         """Extrait imports et variables top-level."""
         lines = []
         for node in tree.body:
@@ -86,7 +94,11 @@ class PythonSplitter:
                     lines.append(segment)
         return "\n".join(lines)
 
-    def _has_parent_class(self, tree: ast.AST, target: ast.AST) -> bool:
+    def _has_parent_class(
+            self,
+            tree: ast.AST,
+            target: ast.AST
+    ) -> bool:
         """Vérifie si un nœud est dans une ClassDef."""
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef):
@@ -95,7 +107,13 @@ class PythonSplitter:
                         return True
         return False
 
-    def _get_offsets(self, node, line_offsets, source, chunk):
+    def _get_offsets(
+        self,
+        node: Any,
+        line_offsets: list[int],
+        source: str,
+        chunk: str | None
+    ) -> tuple[int, int]:
         try:
             first = line_offsets[node.lineno - 1] + node.col_offset
             last = line_offsets[node.end_lineno - 1] + node.end_col_offset

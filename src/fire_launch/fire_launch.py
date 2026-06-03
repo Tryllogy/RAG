@@ -10,7 +10,7 @@ import os
 
 
 class FireLaunch:
-    def __init__(self):
+    def __init__(self) -> None:
         self.llm: OllamaLLM = OllamaLLM(model="qwen3")
 
     @staticmethod
@@ -142,5 +142,5 @@ class FireLaunch:
             print(f"Recall@{k}: {v}")
         return self
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Done"
