@@ -13,6 +13,12 @@ run: install
 answer: install
 	clear && uv run python -m student answer "$(QUESTION)" --k 10
 
+dataanswer: install
+	clear && uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_docs_public.json --save_directory data/output/search_results_and_answer
+
+search: install
+	clear && uv run python -m student search --dataset_path data/datasets/UnansweredQuestions/dataset_code_public.json --query "$(QUESTION)" --k 10
+
 index: install
 	clear && uv run python -m student index --max_chunk_size 2000
 

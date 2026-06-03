@@ -23,7 +23,7 @@ class Chunk:
             self,
             type_file: str = "docs",
             separators: list[str] | None = None,
-            max_chunk_size: int = 3000,
+            max_chunk_size: int = 2000,
             chunk_overlap: int = 500
     ):
         self.new_dir: str = "data/processed/chunks"

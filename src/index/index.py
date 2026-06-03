@@ -5,10 +5,11 @@ from langchain_community.retrievers import BM25Retriever
 import numpy as np
 import os
 from ..process_code import ProcessCode
+import time
 
 
 class Index:
-    def __init__(self, llm: Any, max_chunk_size: int = 3000, k: int = 15):
+    def __init__(self, llm: Any, max_chunk_size: int = 2000, k: int = 15):
         self.llm: Any = llm
         self.max_chunk_size: int = max_chunk_size
         self.k: int = k
@@ -18,6 +19,7 @@ class Index:
     def index(
             self
     ) -> None:
+        start_time = time.time()
         self.chunker = Chunk(max_chunk_size=self.max_chunk_size)
         self.chunker.get_files("data/raw/vllm-0.10.1")
         self.chunker.chunk_files()
@@ -58,6 +60,9 @@ class Index:
             metadatas,
             preprocess_func=ProcessCode._preprocess_text,
         )
+
+        elapsed = time.time() - start_time
+        print(f"Indexing complete in {elapsed:.2f}s")
 
     def save_index(
             self,
