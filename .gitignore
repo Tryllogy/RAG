@@ -6,3 +6,6 @@ __pycache__
 test.txt
 processed
 output
+data.zip
+qwen*
+data
