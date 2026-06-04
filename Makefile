@@ -5,8 +5,8 @@ K := 10
 MAX_CHUNK_SIZE := 2000
 
 install:
-	if [-f "data.tar.gz" ]; then \
-	tar -xzf data.tar.gz -C data; \
+	if [ -f "data.tar" ]; then \
+	tar -xvf data.tar; \
 	fi
 	$(UV) sync
 	if [ ! -f "qwen-0.6b_Q8.gguf" ]; then \
