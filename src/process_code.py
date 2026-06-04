@@ -27,5 +27,15 @@ class ProcessCode:
 
     @staticmethod
     def _preprocess_text(text: str) -> list[str]:
-        """Simple lowercased word tokenizer for prose chunks."""
+        """Simple lowercased word tokenizer for prose chunks.
+
+        Extracts all alphanumeric words and underscores from text,
+        converting them to lowercase for BM25 indexing.
+
+        Args:
+            text: The input text to tokenize.
+
+        Returns:
+            A list of lowercased word tokens.
+        """
         return re.findall(r"[A-Za-z0-9_]+", text.lower())

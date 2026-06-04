@@ -4,7 +4,10 @@ QUESTION := What activation formats does the fused batched MoE layer return in v
 
 install:
 	$(UV) sync
-	ollama pull qwen3:0.6b
+	if [ ! -f "qwen-0.6b_Q8.gguf" ]; then \
+	wget https://huggingface.co/mradermacher/qwen-0.6b-coder-GGUF/resolve/main/qwen-0.6b-coder.Q8_0.gguf \
+	-O qwen-0.6b-coder.Q8_0.gguf; \
+	fi
 	
 
 run: install

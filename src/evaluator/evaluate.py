@@ -11,15 +11,29 @@ class Evaluate:
             student_answer_path: str,
             dataset_path: str
     ):
+        """Initialize the evaluation module.
+
+        Args:
+            student_answer_path: Path to the student's answer results file.
+            dataset_path: Path to the dataset with reference answers.
+        """
         self.overlap_threshold: float = 0.05
         self.retriever = Retrieve()
         self.student_answer_path: str = student_answer_path
         self.dataset_path: str = dataset_path
 
-    def evaluate(
-            self,
-            k: int = 15
-    ) -> dict:
+    def evaluate(self, k: int = 15) -> dict:
+        """Calculate recall metrics for retrieved documents.
+
+        Evaluates how many relevant sources are retrieved within the top-k
+        results, considering character overlap thresholds.
+
+        Args:
+            k: Number of results to evaluate. Defaults to 15.
+
+        Returns:
+            A dictionary with recall scores at k=1, 3, 5, 10.
+        """
         recall_k: dict = {
             "1": 0.0,
             "3": 0.0,
@@ -32,9 +46,9 @@ class Evaluate:
         type_file = type_file.split("_")[1]
         with open(self.student_answer_path, "r") as f:
             content = json.load(f)
+            content = content["search_results"]
         with tqdm(content, desc="Evaluating questions") as pbar:
             for c in content:
-                c = c["search_results"][0]
                 n_questions += 1
                 for key, v in recall_k.items():
                     found = self.get_found(
@@ -54,6 +68,17 @@ class Evaluate:
             type_retriever: str,
             k: int = 15,
     ) -> float:
+        """Calculate the proportion of relevant sources found in top-k results.
+
+        Args:
+            query: The search query.
+            question_id: The ID of the question in the dataset.
+            type_retriever: The type of retriever ("code" or "docs").
+            k: Number of results to check. Defaults to 15.
+
+        Returns:
+            Proportion of relevant sources found (0.0 to 1.0).
+        """
         found: int = 0
         results = self.retriever.retrieve(
             query, k=k, type_retriever=type_retriever)
@@ -80,6 +105,15 @@ class Evaluate:
             source: dict,
             metadata: dict
     ) -> float:
+        """Calculate the character overlap between two source intervals.
+
+        Args:
+            source: Source dictionary with character indices.
+            metadata: Metadata dictionary with character indices.
+
+        Returns:
+            Overlap ratio relative to source length (0.0 to 1.0).
+        """
         source_start = source["first_character_index"]
         source_end = source["last_character_index"]
         metadata_start = metadata["first_character_index"]
@@ -93,10 +127,17 @@ class Evaluate:
                       max(source_start, metadata_start))
         return float(overlap / len_s)
 
-    def get_sources_question(
-            self,
-            question_id: str
-    ) -> Any:
+    def get_sources_question(self, question_id: str) -> Any:
+        """Retrieve original sources for a question from the dataset.
+
+        Searches both code and docs datasets for the question.
+
+        Args:
+            question_id: The unique identifier of the question.
+
+        Returns:
+            List of source dictionaries or None if not found.
+        """
         with open("data/datasets/AnsweredQuestions/dataset_code_public.json",
                   "r") as f:
             content = json.load(f)

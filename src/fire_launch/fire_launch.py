@@ -85,16 +85,18 @@ class FireLaunch:
         answer_instance = Answer()
         with open(student_search_results_path, "r") as f:
             student_results = json.load(f)
+            k_val = student_results.get("k") if len(
+                student_results) > 0 else None
+            student_results = student_results.get("search_results", [])
         responses: list = []
         with tqdm(total=len(student_results),
                   desc="Answering questions") as pbar:
             for r in student_results:
-                sr = r["search_results"][0]
-                answer_instance.question = sr.get("question", "")
+                answer_instance.question = r.get("question", "")
                 answer = answer_instance.answer()
                 minimal = {
-                    "question_id": sr.get("question_id"),
-                    "question": sr.get("question"),
+                    "question_id": r.get("question_id"),
+                    "question": r.get("question"),
                     "retrieved_sources": [
                         {
                             "file_path": s.get("file_path"),
@@ -103,15 +105,13 @@ class FireLaunch:
                             "last_character_index":
                             s.get("last_character_index")
                         }
-                        for s in sr.get("retrieved_sources", [])
+                        for s in r.get("retrieved_sources", [])
                     ],
                     "answer": answer
                 }
                 MinimalAnswer(**minimal)
                 responses.append(minimal)
                 pbar.update(1)
-        k_val = student_results[0].get("k") if len(
-            student_results) > 0 else None
         search_result: dict = {"search_results": responses, "k": k_val}
         StudentSearchResultsAndAnswer(**search_result)
         if not os.path.exists(save_directory):

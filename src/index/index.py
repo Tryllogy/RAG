@@ -10,15 +10,27 @@ import time
 
 class Index:
     def __init__(self, llm: Any, max_chunk_size: int = 2000, k: int = 15):
+        """Initialize the indexer with configuration.
+
+        Args:
+            llm: The language model instance for processing.
+            max_chunk_size: Maximum chunk size in characters. Defaults to
+                2000.
+            k: Default number of results for retrieval. Defaults to 15.
+        """
         self.llm: Any = llm
         self.max_chunk_size: int = max_chunk_size
         self.k: int = k
         self.retriver: BM25Retriever = None
         self.done: bool = False
 
-    def index(
-            self
-    ) -> None:
+    def index(self) -> None:
+        """Create chunked documents and BM25 indices.
+
+        Processes documents, chunks them appropriately (code vs text),
+        creates BM25 indices for efficient retrieval, and saves indices
+        to disk.
+        """
         start_time = time.time()
         self.chunker = Chunk(max_chunk_size=self.max_chunk_size)
         self.chunker.get_files("data/raw/vllm-0.10.1")
@@ -71,6 +83,18 @@ class Index:
             metadatas: list[dict],
             preprocess_func: Callable | None = None
     ) -> None:
+        """Create and save a BM25 index.
+
+        Builds a BM25 retriever from texts and metadata, then serializes
+        it to disk.
+
+        Args:
+            file_path: Path where the index will be saved.
+            texts: List of document texts to index.
+            metadatas: List of metadata dictionaries corresponding to texts.
+            preprocess_func: Optional preprocessing function for text
+                tokenization. Defaults to None.
+        """
         with tqdm(total=1, desc="Indexing chunks") as pbar:
             self.retriver = BM25Retriever.from_texts(
                 texts=texts,
