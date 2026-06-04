@@ -5,8 +5,8 @@ K := 10
 MAX_CHUNK_SIZE := 2000
 
 install:
-	if [-f "data.zip" ]; then \
-	unzip data.zip -d data; \
+	if [-f "data.tar.gz" ]; then \
+	tar -xzf data.tar.gz -C data; \
 	fi
 	$(UV) sync
 	if [ ! -f "qwen-0.6b_Q8.gguf" ]; then \
@@ -54,4 +54,3 @@ lint:
 clean:
 	find . -type d -name "__pycache__" | xargs rm -rf || true
 	rm -rf .mypy_cache .pytest_cache build dist *.egg-info
-	rm -rf data/processed data/output
