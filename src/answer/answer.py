@@ -1,5 +1,4 @@
 from typing import Any
-
 from ..retrieve import Retrieve
 from llama_cpp import Llama
 import json
@@ -21,24 +20,29 @@ class Answer:
         self.retriver: Retrieve = Retrieve()
         self.question: str = question
         self.k: int = k
-        self.data_doc_path: str = "data/datasets/AnsweredQuestions/" \
-            "dataset_code_public.json"
-        self.data_code_path: str = "data/datasets/AnsweredQuestions/" \
+        self.data_docs_path: str = "data/datasets/AnsweredQuestions/" \
             "dataset_docs_public.json"
+        self.data_code_path: str = "data/datasets/AnsweredQuestions/" \
+            "dataset_code_public.json"
         self.llm = Llama(
             model_path="./qwen-0.6b_Q8.gguf",
-            n_ctx=4000,
+            n_ctx=6000,
             n_gpu_layers=-1,
             n_threads=8,
-            temperature=0.1,
+            temperature=0.7,
             max_tokens=500,
             verbose=False
         )
         self.prompt_message: str = """You are a question-answering assistant.
             Use only the information in CONTEXT.
+            Do not end your phrase prematurely.
+            Make ONLY 1 phrase.
+            Finish with your phrase with '.'.
             If the answer is not present, say:
             'I don't know.'"""
         self.max_chunks: int = 3
+        self.question_id: str = ""
+        self.max_iter: int = 5
 
     def answer(self) -> Any:
         """Generate an answer to the question using retrieved context.
@@ -65,8 +69,16 @@ class Answer:
             f"{chr(10).join(chunks)}\n\nSOURCES:\n{sources_text}\n\n" \
             f"\n\n QUESTION: {self.question}\n\nANSWER:"
         result = self.llm(self.prompt_message + question)
-        return result["choices"][0]["text"].replace(
+        result = result["choices"][0]["text"].replace(
             "[THINKING]", "").replace("[/THINKING]", "").strip()
+        i: int = 0
+        while not result.endswith(".") and i < self.max_iter:
+            result2 = self.llm(self.prompt_message + question + result)
+            result = result + result2["choices"][0]["text"].replace(
+                "[THINKING]", "").replace("[/THINKING]", "").strip()
+            result = result.replace("\n", "").strip()
+            i += 1
+        return result
 
     def find_question(self, question: str) -> str:
         """Determine if a question is code-related or docs-related.
@@ -84,5 +96,13 @@ class Answer:
             content = content["rag_questions"]
         for c in content:
             if c["question"] == question:
+                self.question_id = c["question_id"]
                 return "code"
+        with open(self.data_docs_path, "r") as f:
+            content = json.load(f)
+            content = content["rag_questions"]
+        for c in content:
+            if c["question"] == question:
+                self.question_id = c["question_id"]
+                return "docs"
         return "docs"

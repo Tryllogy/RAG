@@ -5,7 +5,7 @@ K := 10
 MAX_CHUNK_SIZE := 2000
 
 install:
-	if [ -f "data.tar" ]; then \
+	if [ -f "data.tar" ] && [ ! -d "data" ]; then \
 	tar -xvf data.tar; \
 	fi
 	$(UV) sync
@@ -19,7 +19,7 @@ run: install
 	$(UV) run python -m $(SRC)
 
 answer: install
-	clear && uv run python -m student answer "$(QUESTION)" --k $(K)
+	clear && uv run python -m student answer --question "$(QUESTION)" --k $(K)
 
 answercode: install
 	clear && uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_code_public.json --save_directory data/output/search_results_and_answer
@@ -28,7 +28,7 @@ answerdoc: install
 	clear && uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_docs_public.json --save_directory data/output/search_results_and_answer
 
 search: install
-	clear && uv run python -m student search --dataset_path data/datasets/UnansweredQuestions/dataset_code_public.json --query "$(QUESTION)" --k $(K)
+	clear && uv run python -m student search --query "$(QUESTION)" --k $(K)
 
 index: install
 	clear && uv run python -m student index --max_chunk_size $(MAX_CHUNK_SIZE)

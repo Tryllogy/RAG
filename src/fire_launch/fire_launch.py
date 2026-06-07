@@ -41,25 +41,24 @@ class FireLaunch:
 
     def answer(
             self,
-            question: str = "",
+            question: str,
             k: int = 5
     ) -> "FireLaunch":
         if not question.strip():
             raise ValueError("question cannot be empty")
         k = self._validate_positive_int(k, "k")
         answer_instance = Answer(question=question, k=k)
-        answer_instance.answer()
+        print(answer_instance.answer())
         return self
 
     def search(
             self,
-            dataset_path: str,
             query: str,
             save_directory: str = "data/output/search_results",
             k: int = 15
     ) -> "FireLaunch":
         search_dataset: SearchDataset = SearchDataset(
-            dataset_path, k, save_directory)
+            k=k, save_dir=save_directory)
         search_dataset.search_query(query)
         return self
 
@@ -73,7 +72,7 @@ class FireLaunch:
             raise FileNotFoundError(f"Dataset not found: {dataset_path}")
         k = self._validate_positive_int(k, "k")
         search_dataset: SearchDataset = SearchDataset(
-            dataset_path, k, save_directory)
+            dataset_path=dataset_path, k=k, save_dir=save_directory)
         search_dataset.search_dataset()
         return self
 

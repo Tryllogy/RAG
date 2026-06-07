@@ -2,8 +2,8 @@ from typing import Any, Callable
 from tqdm import tqdm
 from ..chunker import Chunk
 from langchain_community.retrievers import BM25Retriever
-import numpy as np
 import os
+import numpy as np
 from ..process_code import ProcessCode
 import time
 
@@ -21,7 +21,7 @@ class Index:
         self.llm: Any = llm
         self.max_chunk_size: int = max_chunk_size
         self.k: int = k
-        self.retriver: BM25Retriever = None
+        self.retriver: BM25Retriever | None = None
         self.done: bool = False
 
     def index(self) -> None:
@@ -81,7 +81,7 @@ class Index:
             file_path: str,
             texts: list[str],
             metadatas: list[dict],
-            preprocess_func: Callable | None = None
+            preprocess_func: Callable
     ) -> None:
         """Create and save a BM25 index.
 
@@ -105,13 +105,14 @@ class Index:
             pbar.update(1)
         with open(file_path, "wb") as f:
             with tqdm(total=1, desc="Saving BM25 for docs index") as pbar:
+                data: np.ndarray[Any, Any] = np.array([{
+                    "texts": texts,
+                    "metadatas": metadatas,
+                    "k": self.k,
+                }], dtype=object)
                 np.save(
                     f,
-                    {
-                        "texts": texts,
-                        "metadatas": metadatas,
-                        "k": self.k,
-                    },
+                    data,
                     allow_pickle=True,
                 )
                 pbar.update(1)
