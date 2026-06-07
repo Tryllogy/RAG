@@ -1,3 +1,5 @@
+import uuid
+
 from langchain_ollama import OllamaLLM
 from ..evaluator import Evaluate
 from ..index import Index
@@ -48,7 +50,27 @@ class FireLaunch:
             raise ValueError("question cannot be empty")
         k = self._validate_positive_int(k, "k")
         answer_instance = Answer(question=question, k=k)
-        print(answer_instance.answer())
+        answer_instance.find_question(question)
+        if answer_instance.question_id == "":
+            question_id = str(uuid.uuid4())
+        else:
+            question_id = answer_instance.question_id
+        answer = answer_instance.answer()
+        retrived_sources = answer_instance.retrieved_sources
+        minimal = {
+            "question_id": question_id,
+            "question": question,
+            "retrieved_sources": retrived_sources,
+            "answer": answer
+        }
+        MinimalAnswer(**minimal)
+        search_result: dict = {"search_results": [minimal], "k": k}
+        StudentSearchResultsAndAnswer(**search_result)
+        if not os.path.exists("data/output/answer"):
+            os.makedirs("data/output/answer")
+        with open(os.path.join("data/output/answer", "answer.json"),
+                  "w") as f:
+            json.dump(search_result, f, indent=4)
         return self
 
     def search(

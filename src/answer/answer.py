@@ -26,7 +26,7 @@ class Answer:
             "dataset_code_public.json"
         self.llm = Llama(
             model_path="./qwen-0.6b_Q8.gguf",
-            n_ctx=6000,
+            n_ctx=7000,
             n_gpu_layers=-1,
             n_threads=8,
             temperature=0.7,
@@ -43,6 +43,7 @@ class Answer:
         self.max_chunks: int = 3
         self.question_id: str = ""
         self.max_iter: int = 5
+        self.retrieved_sources: list[dict[str, Any]] = []
 
     def answer(self) -> Any:
         """Generate an answer to the question using retrieved context.
@@ -59,6 +60,15 @@ class Answer:
 
         chunks: list[str] = [c.page_content for c in retrieved[
             :self.max_chunks]]
+        self.retrieved_sources = [
+            {
+                "file_path": c.metadata.get("file_path"),
+                "first_character_index":
+                c.metadata.get("first_character_index"),
+                "last_character_index": c.metadata.get("last_character_index")
+            }
+            for c in retrieved
+        ]
         sources_text = "\n".join([
             f"[{i+1}] {c.metadata.get('file_path', 'unknown')} - Lines "
             f"{c.metadata.get('first_character_index', '?')}-"

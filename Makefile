@@ -1,6 +1,6 @@
 UV := uv
 SRC := student
-QUESTION := What activation formats does the fused batched MoE layer return in vLLM?
+QUESTION := How to configure OpenAI server?
 K := 10
 MAX_CHUNK_SIZE := 2000
 
@@ -19,31 +19,31 @@ run: install
 	$(UV) run python -m $(SRC)
 
 answer: install
-	clear && uv run python -m student answer --question "$(QUESTION)" --k $(K)
+	uv run python -m student answer --question "$(QUESTION)" --k $(K)
 
 answercode: install
-	clear && uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_code_public.json --save_directory data/output/search_results_and_answer
+	uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_code_public.json --save_directory data/output/search_results_and_answer
 
 answerdoc: install
-	clear && uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_docs_public.json --save_directory data/output/search_results_and_answer
+	uv run python -m student answer_dataset --student_search_results_path data/output/search_results/dataset_docs_public.json --save_directory data/output/search_results_and_answer
 
 search: install
-	clear && uv run python -m student search --query "$(QUESTION)" --k $(K)
+	uv run python -m student search --query "$(QUESTION)" --k $(K)
 
 index: install
-	clear && uv run python -m student index --max_chunk_size $(MAX_CHUNK_SIZE)
+	uv run python -m student index --max_chunk_size $(MAX_CHUNK_SIZE)
 
 evaluatecode: install
-	clear && uv run python -m student evaluate data/output/search_results/dataset_code_public.json data/datasets/AnsweredQuestions/dataset_code_public.json --k $(K)
+	uv run python -m student evaluate data/output/search_results/dataset_code_public.json data/datasets/AnsweredQuestions/dataset_code_public.json --k $(K)
 
 evaluatedoc: install
-	clear && uv run python -m student evaluate data/output/search_results/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json --k $(K)
+	uv run python -m student evaluate data/output/search_results/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json --k $(K)
 
 datadoc:
-	clear && uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_docs_public.json --k $(K) --save_directory data/output/search_results
+	uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_docs_public.json --k $(K) --save_directory data/output/search_results
 
 datacode:
-		clear && uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_code_public.json --k $(K) --save_directory data/output/search_results
+	uv run python -m student search_dataset --dataset_path data/datasets/UnansweredQuestions/dataset_code_public.json --k $(K) --save_directory data/output/search_results
 
 lint:
 	flake8 src/*
